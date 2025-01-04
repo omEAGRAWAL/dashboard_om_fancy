@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import NavigationBar from "./NavBar";
 
@@ -9,9 +9,38 @@ export default function CreateProduct() {
       name: "",
       price: 0,
       description: "",
-      category: "",
+      categories: [],
     },
   });
+
+  //   {
+  //     "_id": "6778fd3c8b64816ba0947304",
+  //     "storeId": "676f82c37ea3d34df66c6bd0",
+  //     "name": "sdvwadq",
+  //     "description": "qw",
+  //     "price": 200,
+  //     "images": [
+  //         "https://mywebstores.s3.ap-south-1.amazonaws.com/file/1735982380632-1464359609-antique-lead.jpg"
+  //     ],
+  //     "categories": [],
+  //     "tags": [],
+  //     "variants": [],
+  //     "createdAt": "2025-01-04T09:19:56.071Z",
+  //     "updatedAt": "2025-01-04T09:19:56.071Z",
+  //     "__v": 0
+  // }
+
+  const [category, setCategory] = useState([]);
+  useEffect(() => {
+    fetch(apiUrl + "/api/categories")
+      .then((response) => response.json())
+      .then((data) => {
+        setCategory(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching category:", error);
+      });
+  }, []);
 
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
@@ -40,18 +69,60 @@ export default function CreateProduct() {
     }
   };
 
+  // const onSubmit = async (data) => {
+  //   if (!imageUrl) {
+  //     alert("Please upload an image before submitting.");
+  //     return;
+  //   }
+
+  //   const productData = {
+  //     storeId: "676f82c37ea3d34df66c6bd0", // Static storeId as per the required format
+  //     name: data.name,
+  //     description: data.description,
+  //     price: data.price,
+  //     images: imageUrl, // Use the uploaded image URL
+  //   };
+
+  //   try {
+  //     const response = await fetch(apiUrl + "/api/products", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(productData),
+  //     });
+
+  //     if (response.ok) {
+  //       alert("Product created successfully!");
+  //       reset(); // Reset the form
+  //       setImageUrl(""); // Clear the uploaded image
+  //     } else {
+  //       const errorData = await response.json();
+  //       alert(`Failed to create product: ${errorData.error}`);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error creating product:", error);
+  //   }
+  // };
+
   const onSubmit = async (data) => {
     if (!imageUrl) {
       alert("Please upload an image before submitting.");
       return;
     }
 
+    // Convert categories to an array
+    const selectedCategories = Array.isArray(data.categories)
+      ? data.categories
+      : [data.categories];
+
     const productData = {
-      storeId: "676f82c37ea3d34df66c6bd0", // Static storeId as per the required format
+      storeId: "676f82c37ea3d34df66c6bd0",
       name: data.name,
       description: data.description,
       price: data.price,
-      images: imageUrl, // Use the uploaded image URL
+      images: [imageUrl], // Send as an array
+      categories: selectedCategories, // Include categories in payload
     };
 
     try {
@@ -119,6 +190,30 @@ export default function CreateProduct() {
             {...register("description", { required: true })}
             className="w-full px-4 py-2 border rounded-lg"
           ></textarea>
+        </div>
+
+        <div>
+          <label
+            className="block mb-2 text-sm font-medium"
+            htmlFor="categories"
+          >
+            Categories
+          </label>
+          <select
+            id="categories"
+            {...register("categories", { required: true })}
+            multiple
+            className="w-full px-4 py-2 border rounded-lg"
+          >
+            {category.map((category) => (
+              <option key={category._id} value={category.name}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-sm text-gray-500">
+            Hold Ctrl (or Cmd on Mac) to select multiple categories.
+          </p>
         </div>
 
         <div className="mb-4">
