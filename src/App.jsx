@@ -7,6 +7,8 @@ import ProductList from "./component/ProductList";
 import SearchProduct from "./component/SearchProduct";
 import Header from "./component/Header";
 import NavigationBar from "./component/NavBar";
+import CategoryList from "./component/CategoryList";
+import UpdateCategory from "./component/UpdateCategory";
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
           <Route path="/" element={<ProductList />} />
           {/* Search route without the '?' in the path */}
           <Route path="/search" element={<SearchProduct />} />
+          <Route path="/categorylist" element={<CategoryList />} />
+          <Route path="/update/category/:id" element={<UpdateCategory />} />
         </Routes>
         <NavigationBar />
       </div>

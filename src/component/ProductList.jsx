@@ -36,7 +36,7 @@ const ProductList = () => {
               <p className="text-gray-500 text-sm">{product.description}</p>
               <div className="flex items-center mt-2">
                 <span className="text-xl font-bold text-green-600">
-                  ${product.price * 0.8}
+                  ${product.price}
                 </span>
                 <span className="text-sm line-through text-gray-400 ml-2">
                   ${product.price}
