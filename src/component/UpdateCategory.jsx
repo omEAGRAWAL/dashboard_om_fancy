@@ -1,37 +1,35 @@
-import  { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function CategoryEdit() {
-  const { id } = useParams(); // Get the ID from the URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [category, setCategory] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    image: "",
+    Image: "",
   });
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     // Fetch category by ID
     fetch(`${apiUrl}/api/categories`)
       .then((response) => response.json())
       .then((data) => {
-
-
-        setCategory(data.find((item) => item._id === id));
-        console.log(data.find((item) => item._id === id));
-
-        setFormData({
-          name: data.name,
-          description: data.description,
-          image: data.Image,
-        });
+        const fetchedCategory = data.find((item) => item._id === id);
+        if (fetchedCategory) {
+          setCategory(fetchedCategory);
+          setFormData({
+            name: fetchedCategory.name,
+            description: fetchedCategory.description,
+            Image: fetchedCategory.Image,
+          });
+        }
       })
-      .catch((error) => {
-        console.error("Error fetching category:", error);
-      });
+      .catch((error) => console.error("Error fetching category:", error));
   }, [id]);
 
   const handleChange = (e) => {
@@ -40,20 +38,23 @@ function CategoryEdit() {
   };
 
   const handleImageUpload = async (e) => {
+    setUploading(true);
     const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append("file", file);
+    if (!file) return;
+    const uploadFormData = new FormData();
+    uploadFormData.append("file", file);
 
     try {
       const response = await fetch(`${apiUrl}/api/upload`, {
         method: "POST",
-        body: formData,
+        body: uploadFormData,
       });
       const data = await response.json();
-      setFormData((prev) => ({ ...prev, image: data.imageUrl }));
+      setFormData((prev) => ({ ...prev, Image: data.fileUrl }));
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("Error uploading Image:", error);
     }
+    setUploading(false);
   };
 
   const handleUpdate = async (e) => {
@@ -98,15 +99,14 @@ function CategoryEdit() {
   }
 
   return (
-    <div className="p-4 max-w-md mx-auto bg-white shadow-md rounded">
+    <div className="p-4 max-w-md mx-auto bg-white shadow-md rounded mb-20 pb-7">
       <form onSubmit={handleUpdate}>
-        <label className="block mb-2 font-medium">
+        <label className="block mb-20 font-medium">
           Name
           <input
             type="text"
             name="name"
             value={formData.name}
-            defaultValue={category.name}
             onChange={handleChange}
             className="w-full border rounded p-2"
           />
@@ -116,7 +116,6 @@ function CategoryEdit() {
           <textarea
             name="description"
             value={formData.description}
-            defaultValue={category.description}
             onChange={handleChange}
             className="w-full border rounded p-2"
           />
@@ -130,11 +129,18 @@ function CategoryEdit() {
           />
         </label>
 
-        <img src={category.image} alt="Preview" className="w-20 h-20" />
+        {category.Image && (
+          <div>
+            <p>Existing Image:</p>
+            <img src={category.Image} alt="Current" className="w-20 h-20" />
+          </div>
+        )}
+        {uploading && <p>Uploading Image...</p>}
 
-        {formData.image && (
-          <div className="mb-2">
-            <img src={formData.image} alt="Preview" className="w-20 h-20" />
+        {formData.Image && (
+          <div>
+            <p>New Image:</p>
+            <img src={formData.Image} alt="Preview" className="w-20 h-20" />
           </div>
         )}
         <button
